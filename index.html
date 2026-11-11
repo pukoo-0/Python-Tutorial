@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Python from Zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EAF0F3;
+  --surface: #FFFFFF;
+  --ink: #18263A;
+  --muted: #5B6B7E;
+  --line: #C9D5DE;
+  --accent: #2F7D5B;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEFE5;
+  --error: #B4412E;
+  --error-soft: #F7E1DC;
+  --code-bg: #F4F7F9;
+  --out-bg: #18263A;
+  --out-ink: #E3EAF0;
+  --grid: rgba(24, 38, 58, 0.05);
+  --sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1720; --surface: #16212C; --ink: #E3EAF0; --muted: #93A3B3; --line: #2A3947;
+    --accent: #5FC497; --accent-ink: #0B1B13; --accent-soft: #183A2C; --error: #F08A74; --error-soft: #3A1F1A;
+    --code-bg: #0E1821; --out-bg: #070D13; --out-ink: #CFE0D7; --grid: rgba(227, 234, 240, 0.04);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1720; --surface: #16212C; --ink: #E3EAF0; --muted: #93A3B3; --line: #2A3947;
+  --accent: #5FC497; --accent-ink: #0B1B13; --accent-soft: #183A2C; --error: #F08A74; --error-soft: #3A1F1A;
+  --code-bg: #0E1821; --out-bg: #070D13; --out-ink: #CFE0D7; --grid: rgba(227, 234, 240, 0.04);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; font-family: var(--sans); font-size: 17px; line-height: 1.55; color: var(--ink);
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+code, pre, textarea { font-family: var(--mono); }
+
+.app { display: grid; grid-template-columns: 280px minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
+
+.side {
+  position: sticky; top: env(safe-area-inset-top, 0px); align-self: start;
+  height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto; padding: 28px 20px 24px; border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+}
+.brand { font-weight: 700; font-size: 1.2rem; margin: 0 0 2px; }
+.brand-sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 20px; }
+.progress { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 22px; }
+.progress-label { font-size: 0.85rem; color: var(--muted); }
+.progress-num { font-family: var(--mono); font-size: 2rem; font-weight: 600; line-height: 1.15; }
+.bar { height: 8px; border-radius: 4px; background: var(--code-bg); border: 1px solid var(--line); overflow: hidden; margin: 8px 0 6px; }
+.bar > div { height: 100%; background: var(--accent); width: 0; transition: width .4s ease; }
+.progress-note { font-size: 0.85rem; color: var(--muted); }
+.modlist { list-style: none; padding: 0; margin: 0; }
+.mod-btn { width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 8px 10px; display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 6px; }
+.mod-btn:hover { background: var(--surface); }
+.mod-btn[aria-current="true"] { background: var(--surface); box-shadow: inset 3px 0 0 var(--accent); font-weight: 700; }
+.mod-n { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+.mod-count { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+.mod-count.full { color: var(--accent); font-weight: 600; }
+.engine { margin-top: 20px; font-size: 0.82rem; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #C9A227; flex: none; }
+.dot.ok { background: var(--accent); }
+.dot.bad { background: var(--error); }
+.reset { margin-top: 14px; background: none; border: 0; padding: 0; color: var(--muted); font-size: 0.82rem; text-decoration: underline; }
+
+main { padding: 32px 40px 80px; min-width: 0; }
+.lesson-head h1 { font-size: 2rem; line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; }
+.lesson-head p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.learn { margin: 22px 0 26px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.learn > summary { cursor: pointer; padding: 14px 18px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 10px; }
+.learn > summary::-webkit-details-marker { display: none; }
+.learn > summary::after { content: "Show"; font-weight: 400; font-size: 0.85rem; color: var(--muted); text-decoration: underline; }
+.learn[open] > summary::after { content: "Hide"; }
+.learn-body { padding: 4px 18px 18px; }
+.block { padding: 14px 0; border-top: 1px solid var(--line); max-width: 72ch; }
+.block:first-child { border-top: 0; padding-top: 4px; }
+.block-step { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); margin-bottom: 2px; }
+.block p { margin: 0 0 8px; }
+.block p:last-child { margin-bottom: 0; }
+.sample { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 10px 0 6px; font-size: 14px; }
+.sample pre { margin: 0; padding: 10px 12px; white-space: pre; overflow-x: auto; }
+.sample .s-code { background: var(--code-bg); }
+.sample .s-out { background: var(--out-bg); color: var(--out-ink); }
+.sample .s-tag { display: block; font-family: var(--sans); font-size: 0.72rem; opacity: 0.7; margin-bottom: 4px; }
+.sample.solo { grid-template-columns: 1fr; }
+code.i { background: var(--code-bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-size: 0.88em; white-space: nowrap; }
+.tip { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 0.95rem; }
+.try-head { margin: 18px 0 8px; font-weight: 700; }
+
+.ex-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.steps { display: flex; gap: 6px; }
+.step { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface); font-family: var(--mono); font-size: 0.85rem; display: grid; place-items: center; }
+.step[aria-current="true"] { border-color: var(--ink); border-width: 2px; }
+.step.done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ex-title { font-size: 1.3rem; margin: 0; }
+
+.task { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; max-width: 78ch; }
+.task p { margin: 0 0 8px; }
+.task p:last-child { margin-bottom: 0; }
+
+.editor-wrap { border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--code-bg); }
+.editor-wrap:focus-within { border-color: var(--accent); }
+.editor-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 12px; font-size: 0.8rem; color: var(--muted); border-bottom: 1px solid var(--line); }
+textarea.code { display: block; width: 100%; min-height: 160px; resize: vertical; border: 0; outline: none; padding: 14px 16px; background: transparent; color: var(--ink); font-size: 15px; line-height: 1.55; tab-size: 4; white-space: pre; overflow-x: auto; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.btn { border-radius: 8px; padding: 9px 16px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 700; font-size: 0.95rem; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: none; border-color: transparent; font-weight: 400; text-decoration: underline; padding-left: 6px; padding-right: 6px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+.console { border-radius: 12px; border: 1px solid var(--line); background: var(--surface); overflow: hidden; }
+.console-head { padding: 8px 14px; font-size: 0.85rem; font-weight: 700; border-bottom: 1px solid var(--line); }
+.console pre { margin: 0; padding: 12px 14px; font-size: 14px; white-space: pre-wrap; word-break: break-word; min-height: 48px; max-height: 320px; overflow: auto; }
+.console.pass { border-color: var(--accent); }
+.console.pass .console-head { background: var(--accent-soft); }
+.console.fail .console-head { background: var(--error-soft); }
+.verdict { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 0.95rem; }
+.verdict.pass { color: var(--accent); font-weight: 700; }
+.verdict.fail { color: var(--error); }
+.err-line { color: var(--error); }
+
+.helper { margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px dashed var(--line); max-width: 78ch; }
+.helper h3 { font-size: 0.95rem; margin: 0 0 6px; }
+.helper p { margin: 0; }
+.helper pre { background: var(--code-bg); padding: 10px 12px; border-radius: 8px; overflow-x: auto; font-size: 14px; margin: 8px 0 0; }
+
+.next-row { display: flex; justify-content: space-between; margin-top: 22px; gap: 10px; }
+.finish { background: var(--accent-soft); border-radius: 12px; padding: 18px 20px; margin-top: 22px; max-width: 78ch; }
+.finish h2 { margin: 0 0 6px; font-size: 1.2rem; }
+.finish p { margin: 0; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 18px 16px 12px; }
+  .progress { padding: 10px 12px; margin-bottom: 12px; }
+  .progress-num { font-size: 1.5rem; }
+  .modlist { display: flex; overflow-x: auto; gap: 4px; padding-bottom: 6px; }
+  .mod-btn { white-space: nowrap; grid-template-columns: auto auto auto; }
+  .mod-btn[aria-current="true"] { box-shadow: inset 0 -3px 0 var(--accent); }
+  main { padding: 22px 16px 60px; }
+  .lesson-head h1 { font-size: 1.6rem; }
+  .sample { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Lessons">
+    <p class="brand">Python from Zero</p>
+    <p class="brand-sub">Learn by typing, one small step at a time.</p>
+    <div class="progress" aria-live="polite">
+      <div class="progress-label">Progress</div>
+      <div class="progress-num" id="pct">0%</div>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <div class="progress-note" id="pct-note">0 exercises solved</div>
+    </div>
+    <ul class="modlist" id="modlist"></ul>
+    <div class="engine"><span class="dot" id="engine-dot"></span><span id="engine-text">Starting Python…</span></div>
+    <button class="reset" id="reset">Reset all progress</button>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<script type="text/python" id="py-bridge">
+from browser import window
+import sys
+
+class _Out:
+    def __init__(self):
+        self.buf = []
+    def write(self, s):
+        self.buf.append(str(s))
+    def flush(self):
+        pass
+
+def _run(code, check, token):
+    out = _Out()
+    old_out, old_err = sys.stdout, sys.stderr
+    sys.stdout = out
+    sys.stderr = out
+    ns = {"__name__": "__main__"}
+    err = ""
+    try:
+        exec(code, ns)
+    except SyntaxError as e:
+        line = getattr(e, "lineno", None)
+        msg = getattr(e, "msg", None) or str(e)
+        err = type(e).__name__ + (" on line " + str(line) if line else "") + ": " + str(msg)
+    except Exception as e:
+        err = type(e).__name__ + ": " + str(e)
+    finally:
+        sys.stdout = old_out
+        sys.stderr = old_err
+    text = "".join(out.buf)
+    ok = False
+    msg = ""
+    if not err and check:
+        ns["__output__"] = text
+        ns["__code__"] = code
+        out2 = _Out()
+        sys.stdout = out2
+        try:
+            exec(check, ns)
+            ok = True
+        except AssertionError as e:
+            msg = str(e)
+        except Exception as e:
+            msg = "While testing your code: " + type(e).__name__ + ": " + str(e)
+        finally:
+            sys.stdout = old_out
+    window.pyDone(token, ok, text, err, msg)
+
+window.pyRun = _run
+</script>
+
+<script>
+const PRELUDE = `
+def expect(cond, msg):
+    if not cond:
+        raise AssertionError(msg)
+def near(a, b, tol=1e-6):
+    try:
+        return abs(a - b) <= tol
+    except Exception:
+        return False
+def lines():
+    return [l.strip() for l in __output__.strip().splitlines() if l.strip()]
+def defined(name):
+    return name in globals()
+def is_num(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+`;
+
+/* Each learn block: t = explanation (HTML), code = example code, out = what it prints */
+const MODULES = [
+{
+  id: "m1", title: "Your first program",
+  blurb: "Write code that makes the computer show something on screen.",
+  learn: [
+    { t: "<p>A <b>program</b> is a list of instructions for the computer. Python reads your instructions from the <b>top to the bottom</b>, one line at a time, and does exactly what each line says.</p><p>The first instruction most people learn is <code class='i'>print()</code>. It shows whatever you put inside the brackets on the screen.</p>",
+      code: `print("Good morning")
+print("How are you?")`, out: `Good morning
+How are you?` },
+    { t: "<p><b>Text needs quotes.</b> The quotes tell Python: “this is text, just show it as it is.”</p><p>Without quotes, Python thinks the word is the name of something and gets confused. You can use double quotes <code class='i'>\"hi\"</code> or single quotes <code class='i'>'hi'</code>, but the opening and closing quote must match.</p>",
+      code: `print("Hello")
+print(Hello)`, out: `Hello
+NameError: name 'Hello' is not defined` },
+    { t: "<p><b>Numbers don’t need quotes.</b> Python can also do maths inside <code class='i'>print()</code>. Look at the difference: with quotes, Python shows the text. Without quotes, it calculates.</p>",
+      code: `print(2 + 3)
+print("2 + 3")`, out: `5
+2 + 3` },
+    { t: "<p>To show several things on one line, separate them with <b>commas</b>. Python puts a space between them for you.</p>",
+      code: `print("I am", 25, "years old")`, out: `I am 25 years old` },
+    { t: "<p>A line that starts with <code class='i'>#</code> is a <b>comment</b>. Python ignores it completely. Comments are notes for humans, to explain what your code does.</p>",
+      code: `# This line is ignored
+print("Only this is shown")`, out: `Only this is shown` }
+  ],
+  playground: `print("Hello!")
+print("My favourite number is", 7)
+print(10 * 3)`,
+  exercises: [
+    { id: "1a", title: "Hello, World!",
+      task: "<p>It’s a tradition that everyone’s first program prints this. Print exactly:</p><p><code class='i'>Hello, World!</code></p>",
+      starter: `# Type your code below this line
+`,
+      hint: "Use print() and put the text inside quotes. Capital letters and the comma must match.",
+      solution: `print("Hello, World!")`,
+      check: `expect(__output__.strip() == "Hello, World!", "Your output should be exactly: Hello, World!  (check capital letters, the comma and the !)")` },
+    { id: "1b", title: "Two lines, in order",
+      task: "<p>Print these two lines, in this order:</p><p><code class='i'>Python is fun</code><br><code class='i'>I am learning</code></p>",
+      starter: ``,
+      hint: "You need two print() lines. Python runs them from top to bottom.",
+      solution: `print("Python is fun")
+print("I am learning")`,
+      check: `expect(lines() == ["Python is fun", "I am learning"], "Expected two lines: 'Python is fun' then 'I am learning'")` },
+    { id: "1c", title: "Let Python do the maths",
+      task: "<p>How many hours are in a year? There are 365 days and 24 hours in a day.</p><p>Make Python calculate and print the answer. Don’t calculate it yourself: write the multiplication in your code. In Python, <code class='i'>*</code> means multiply.</p>",
+      starter: ``,
+      hint: "print(365 * 24)",
+      solution: `print(365 * 24)`,
+      check: `expect("8760" not in __code__, "Let Python calculate it. Don’t type the answer yourself")
+expect("*" in __code__, "Use * to multiply")
+expect(__output__.strip() == "8760", "The answer should be 8760")` }
+  ]
+},
+{
+  id: "m2", title: "Variables",
+  blurb: "Give names to values so you can use them again later.",
+  learn: [
+    { t: "<p>A <b>variable</b> is like a labelled box. You put a value inside and write a name on the label. Later, you use the name to get the value back.</p><p>You create a variable with <code class='i'>=</code>. The name goes on the left, the value on the right.</p>",
+      code: `name = "Sara"
+age = 30
+print(name)
+print(age)`, out: `Sara
+30` },
+    { t: "<p><b>Important:</b> in Python, <code class='i'>=</code> does not mean “equals” like in maths. It means <b>“store this value in this name”</b>.</p><p>Python always works out the right side first, then stores the result in the name on the left.</p>",
+      code: `price = 4 * 3
+print(price)`, out: `12` },
+    { t: "<p>You can <b>change</b> what’s inside a variable. The new value replaces the old one.</p><p>A very common pattern is updating a variable using its own value. Read <code class='i'>score = score + 5</code> as: “take the current score, add 5, and store the result back in score.”</p>",
+      code: `score = 10
+score = score + 5
+print(score)`, out: `15` },
+    { t: "<p><b>Naming rules:</b> names can use letters, numbers and underscores <code class='i'>_</code>, but can’t start with a number and can’t have spaces. Capital letters matter: <code class='i'>Age</code> and <code class='i'>age</code> are two different variables.</p><p>Good names describe the value, like <code class='i'>total_price</code> or <code class='i'>user_name</code>.</p>" },
+    { t: "<p>To put variables inside a sentence, use an <b>f-string</b>: write <code class='i'>f</code> right before the opening quote, then put each variable name inside curly brackets <code class='i'>{ }</code>. Python swaps each name for its value.</p>",
+      code: `name = "Sara"
+age = 30
+print(f"{name} is {age} years old")`, out: `Sara is 30 years old` }
+  ],
+  playground: `city = "Tokyo"
+people = 14000000
+print(f"{city} has {people} people")
+people = people + 1
+print(people)`,
+  exercises: [
+    { id: "2a", title: "Your first variables",
+      task: "<p>Create a variable <code class='i'>food</code> that stores your favourite food (text, so use quotes).</p><p>Create a variable <code class='i'>price</code> that stores how much it costs (a number, no quotes).</p><p>Then print both.</p>",
+      starter: ``,
+      hint: "food = \"pizza\" on one line, price = 8.5 on the next, then print(food, price)",
+      solution: `food = "pizza"
+price = 8.5
+print(food, price)`,
+      check: `expect(defined("food") and isinstance(food, str) and food.strip() != "", "Create food and store some text in it, with quotes")
+expect(defined("price") and is_num(price), "price should be a number, written without quotes")
+expect(food in __output__, "Print food and price")` },
+    { id: "2b", title: "Update a variable",
+      task: "<p>You start with 10 coins. You find 5 more, then spend 3.</p><p>Update <code class='i'>coins</code> twice using its own value (like <code class='i'>coins = coins + ...</code>). Don’t just write the final number.</p>",
+      starter: `coins = 10
+# you find 5 coins
+
+# you spend 3 coins
+
+print(coins)`,
+      hint: "coins = coins + 5, then coins = coins - 3",
+      solution: `coins = 10
+# you find 5 coins
+coins = coins + 5
+# you spend 3 coins
+coins = coins - 3
+print(coins)`,
+      check: `expect(defined("coins") and coins == 12, "coins should end up as 12")
+expect("12" not in __code__, "Update coins step by step instead of typing 12")
+expect("coins +" in __code__ or "+=" in __code__, "Add to coins using its own value: coins = coins + 5")` },
+    { id: "2c", title: "Your first f-string",
+      task: "<p>Using the two variables, print exactly:</p><p><code class='i'>Alex is 25 years old</code></p><p>Use an f-string so the name and age come from the variables.</p>",
+      starter: `name = "Alex"
+age = 25
+`,
+      hint: "print(f\"{name} is {age} years old\")",
+      solution: `name = "Alex"
+age = 25
+print(f"{name} is {age} years old")`,
+      check: `expect(__output__.strip() == "Alex is 25 years old", "Your output should be exactly: Alex is 25 years old")
+expect("{name}" in __code__ and "{age}" in __code__, "Use {name} and {age} inside an f-string")` }
+  ]
+},
+{
+  id: "m3", title: "Numbers & maths",
+  blurb: "Use Python as a powerful calculator.",
+  learn: [
+    { t: "<p>Python has two main kinds of numbers. <b>Integers</b> (<code class='i'>int</code>) are whole numbers like <code class='i'>7</code> or <code class='i'>-3</code>. <b>Floats</b> (<code class='i'>float</code>) have a decimal point, like <code class='i'>3.5</code>.</p><p>You can mix them freely in calculations.</p>" },
+    { t: "<p>The four basic operations work like a calculator: <code class='i'>+</code> add, <code class='i'>-</code> subtract, <code class='i'>*</code> multiply, <code class='i'>/</code> divide.</p><p>Note that <code class='i'>/</code> always gives a decimal answer, even when it divides evenly.</p>",
+      code: `print(7 + 2)
+print(7 - 2)
+print(7 * 2)
+print(8 / 2)`, out: `9
+5
+14
+4.0` },
+    { t: "<p>Three more you’ll use a lot:</p><p><code class='i'>**</code> is “to the power of”. <code class='i'>//</code> divides and drops the decimal part (“how many whole times does it fit?”). <code class='i'>%</code> gives the <b>remainder</b> left over after dividing.</p>",
+      code: `print(2 ** 3)
+print(7 // 2)
+print(7 % 2)`, out: `8
+3
+1` },
+    { t: "<p>Python follows the usual maths order: powers first, then multiply and divide, then add and subtract. Use brackets to choose the order yourself.</p>",
+      code: `print(2 + 3 * 4)
+print((2 + 3) * 4)`, out: `14
+20` },
+    { t: "<p><code class='i'>round(number, digits)</code> rounds a number. The second part says how many decimal places to keep.</p>",
+      code: `print(round(3.14159, 2))
+print(round(2.7))`, out: `3.14
+3` },
+    { t: "<p>A handy shortcut: <code class='i'>x += 5</code> means the same as <code class='i'>x = x + 5</code>. It also works with <code class='i'>-=</code>, <code class='i'>*=</code> and <code class='i'>/=</code>.</p>" }
+  ],
+  playground: `minutes = 200
+print(minutes / 60)
+print(minutes // 60, "hours")
+print(minutes % 60, "minutes left over")`,
+  exercises: [
+    { id: "3a", title: "Area of a room",
+      task: "<p>A room is 8 metres wide and 5 metres long.</p><p>Calculate the area (width × length), store it in <code class='i'>area</code>, and print it.</p>",
+      starter: `width = 8
+length = 5
+`,
+      hint: "area = width * length, then print(area)",
+      solution: `width = 8
+length = 5
+area = width * length
+print(area)`,
+      check: `expect(defined("area") and area == 40, "area should be 40")
+expect("40" in __output__, "Print area")` },
+    { id: "3b", title: "Average test score",
+      task: "<p>Calculate the average of the three scores. Store it in <code class='i'>average</code>, then print it rounded to 1 decimal place.</p><p>Careful with the order: add them up first, then divide by 3.</p>",
+      starter: `score1 = 80
+score2 = 90
+score3 = 75
+`,
+      hint: "average = (score1 + score2 + score3) / 3. The brackets matter! Then print(round(average, 1))",
+      solution: `score1 = 80
+score2 = 90
+score3 = 75
+average = (score1 + score2 + score3) / 3
+print(round(average, 1))`,
+      check: `expect(defined("average") and near(average, 245 / 3, 1e-6), "average should be about 81.67. Did you put brackets around the sum?")
+expect("81.7" in __output__, "Print average rounded to 1 decimal place: 81.7")` },
+    { id: "3c", title: "Minutes to hours",
+      task: "<p>A movie is 135 minutes long. Use <code class='i'>//</code> to find the whole hours, and <code class='i'>%</code> to find the minutes left over.</p><p>Store them in <code class='i'>hours</code> and <code class='i'>remaining</code>, then print exactly:</p><p><code class='i'>2 hours and 15 minutes</code></p>",
+      starter: `minutes = 135
+`,
+      hint: "hours = minutes // 60, remaining = minutes % 60, then use an f-string",
+      solution: `minutes = 135
+hours = minutes // 60
+remaining = minutes % 60
+print(f"{hours} hours and {remaining} minutes")`,
+      check: `expect(defined("hours") and hours == 2, "hours should be 2. Use minutes // 60")
+expect(defined("remaining") and remaining == 15, "remaining should be 15. Use minutes % 60")
+expect(__output__.strip() == "2 hours and 15 minutes", "Print exactly: 2 hours and 15 minutes")` }
+  ]
+},
+{
+  id: "m4", title: "Text",
+  blurb: "Work with words and sentences.",
+  learn: [
+    { t: "<p>Text in Python is called a <b>string</b> (<code class='i'>str</code>), because it’s a string of characters. Anything inside quotes is a string, even digits: <code class='i'>\"42\"</code> is text, <code class='i'>42</code> is a number.</p>" },
+    { t: "<p>You can join strings with <code class='i'>+</code>. Python doesn’t add spaces for you here, so add them yourself. You can also repeat a string with <code class='i'>*</code>.</p>",
+      code: `first = "Ice"
+second = "cream"
+print(first + " " + second)
+print("ha" * 3)`, out: `Ice cream
+hahaha` },
+    { t: "<p><code class='i'>len()</code> counts how many characters a string has. Spaces count too.</p>",
+      code: `print(len("Hello"))
+print(len("Hi there"))`, out: `5
+8` },
+    { t: "<p>Strings come with built-in <b>tools</b> called methods. You use them with a dot after the string: the dot means “use a tool that belongs to this value.”</p><p><code class='i'>.upper()</code> makes capitals, <code class='i'>.lower()</code> makes small letters, <code class='i'>.strip()</code> removes spaces at the start and end, <code class='i'>.replace(old, new)</code> swaps text.</p>",
+      code: `word = "  Hello World  "
+print(word.strip())
+print(word.upper())
+print(word.replace("World", "Python"))`, out: `Hello World
+  HELLO WORLD  
+  Hello Python  ` },
+    { t: "<p>You can use several tools in a row. They run from left to right.</p>",
+      code: `print("  HeLLo ".strip().lower())`, out: `hello` },
+    { t: "<p><b>Text and numbers don’t mix.</b> <code class='i'>\"5\" + \"5\"</code> joins text and gives <code class='i'>55</code>. <code class='i'>\"5\" + 5</code> causes an error, because Python won’t guess what you meant.</p><p>Convert between them: <code class='i'>int(\"5\")</code> makes a whole number, <code class='i'>float(\"2.5\")</code> makes a decimal, <code class='i'>str(5)</code> makes text.</p>",
+      code: `print("5" + "5")
+print(int("5") + 5)
+print("Age: " + str(30))`, out: `55
+10
+Age: 30` }
+  ],
+  playground: `message = "  python is great  "
+print(message.strip().upper())
+print(len(message))
+print(message.replace("great", "fun"))`,
+  exercises: [
+    { id: "4a", title: "Full name",
+      task: "<p>Join <code class='i'>first</code> and <code class='i'>last</code> with a space in between. Store the result in <code class='i'>full_name</code> and print it.</p>",
+      starter: `first = "Ada"
+last = "Lovelace"
+`,
+      hint: "full_name = first + \" \" + last",
+      solution: `first = "Ada"
+last = "Lovelace"
+full_name = first + " " + last
+print(full_name)`,
+      check: `expect(defined("full_name"), "Create a variable called full_name")
+expect(full_name == "Ada Lovelace", "full_name should be 'Ada Lovelace' with one space in the middle")
+expect("Ada Lovelace" in __output__, "Print full_name")` },
+    { id: "4b", title: "Clean up an email",
+      task: "<p>People type emails messily. Make <code class='i'>clean</code>: remove the spaces at both ends, and make everything lowercase. Print it.</p><p>Expected: <code class='i'>alex@mail.com</code></p>",
+      starter: `email = "  Alex@Mail.COM  "
+`,
+      hint: "Chain two tools: email.strip().lower()",
+      solution: `email = "  Alex@Mail.COM  "
+clean = email.strip().lower()
+print(clean)`,
+      check: `expect(defined("clean"), "Create a variable called clean")
+expect(clean == "alex@mail.com", "clean should be exactly alex@mail.com, with no spaces")` },
+    { id: "4c", title: "Fix the bug",
+      task: "<p>This code crashes. Press <b>Run</b> first and look at the error message.</p><p>Then fix it so it prints <code class='i'>21</code>.</p>",
+      starter: `age = "20"
+next_year = age + 1
+print(next_year)`,
+      hint: "age is text because of the quotes. Convert it with int(age) before adding 1.",
+      solution: `age = "20"
+next_year = int(age) + 1
+print(next_year)`,
+      check: `expect(__output__.strip() == "21", "It should print 21")` }
+  ]
+},
+{
+  id: "m5", title: "Lists",
+  blurb: "Store many values under one name.",
+  learn: [
+    { t: "<p>A <b>list</b> holds many values in order. Write it with square brackets <code class='i'>[ ]</code> and separate the items with commas.</p>",
+      code: `fruits = ["apple", "banana", "cherry"]
+print(fruits)`, out: `['apple', 'banana', 'cherry']` },
+    { t: "<p>Each item has a <b>position number</b>, called an index. Python starts counting at <b>0</b>, not 1. Think of it as “how many steps from the start”: the first item is 0 steps away.</p><p>Get one item by putting its index in square brackets.</p>",
+      code: `fruits = ["apple", "banana", "cherry"]
+print(fruits[0])
+print(fruits[2])`, out: `apple
+cherry` },
+    { t: "<p>Negative numbers count from the end. <code class='i'>[-1]</code> is always the last item, <code class='i'>[-2]</code> the second-to-last. <code class='i'>len()</code> tells you how many items there are.</p>",
+      code: `fruits = ["apple", "banana", "cherry"]
+print(fruits[-1])
+print(len(fruits))`, out: `cherry
+3` },
+    { t: "<p>Lists can change. Replace an item by its index, add one at the end with <code class='i'>.append()</code>, or delete one with <code class='i'>.remove()</code>.</p>",
+      code: `fruits = ["apple", "banana", "cherry"]
+fruits[1] = "kiwi"
+fruits.append("mango")
+fruits.remove("apple")
+print(fruits)`, out: `['kiwi', 'cherry', 'mango']` },
+    { t: "<p>For lists of numbers, Python has ready-made helpers: <code class='i'>sum()</code> adds them up, <code class='i'>min()</code> finds the smallest, <code class='i'>max()</code> the largest.</p>",
+      code: `prices = [3, 8, 2, 5]
+print(sum(prices))
+print(min(prices), max(prices))`, out: `18
+2 8` },
+    { t: "<p>A <b>slice</b> takes a piece of a list: <code class='i'>items[1:3]</code> means “from index 1 up to, but <b>not including</b>, index 3.”</p>",
+      code: `letters = ["a", "b", "c", "d", "e"]
+print(letters[1:3])`, out: `['b', 'c']` }
+  ],
+  playground: `pets = ["cat", "dog"]
+pets.append("fish")
+print(pets)
+print(pets[0], pets[-1])
+print(len(pets))`,
+  exercises: [
+    { id: "5a", title: "First, last, count",
+      task: "<p>From the list <code class='i'>colors</code>, store the first item in <code class='i'>first</code>, the last item in <code class='i'>last</code>, and the number of items in <code class='i'>n</code>. Print all three.</p>",
+      starter: `colors = ["red", "green", "blue", "yellow"]
+`,
+      hint: "first = colors[0], last = colors[-1], n = len(colors)",
+      solution: `colors = ["red", "green", "blue", "yellow"]
+first = colors[0]
+last = colors[-1]
+n = len(colors)
+print(first, last, n)`,
+      check: `expect(defined("first") and first == "red", "first should be 'red'. Remember: counting starts at 0")
+expect(defined("last") and last == "yellow", "last should be 'yellow'. Tip: index -1 is the last item")
+expect(defined("n") and n == 4, "n should be 4. Use len()")
+expect(__output__.strip() != "", "Print the three values")` },
+    { id: "5b", title: "Shopping list",
+      task: "<p>Add <code class='i'>\"bread\"</code> to the shopping list, then remove <code class='i'>\"eggs\"</code>. Print the list.</p><p>Expected: <code class='i'>['milk', 'bread']</code></p>",
+      starter: `shopping = ["milk", "eggs"]
+`,
+      hint: "shopping.append(\"bread\") then shopping.remove(\"eggs\")",
+      solution: `shopping = ["milk", "eggs"]
+shopping.append("bread")
+shopping.remove("eggs")
+print(shopping)`,
+      check: `expect("append" in __code__ and "remove" in __code__, "Use .append() and .remove()")
+expect(defined("shopping") and shopping == ["milk", "bread"], "shopping should be ['milk', 'bread']")` },
+    { id: "5c", title: "Weather stats",
+      task: "<p>Find the highest, lowest and average temperature. Store them in <code class='i'>highest</code>, <code class='i'>lowest</code> and <code class='i'>average</code>, and print them.</p><p>Average = total ÷ number of days.</p>",
+      starter: `temps = [22, 25, 19, 30, 24]
+`,
+      hint: "max(temps), min(temps), and sum(temps) / len(temps)",
+      solution: `temps = [22, 25, 19, 30, 24]
+highest = max(temps)
+lowest = min(temps)
+average = sum(temps) / len(temps)
+print(highest, lowest, average)`,
+      check: `expect(defined("highest") and highest == 30, "highest should be 30")
+expect(defined("lowest") and lowest == 19, "lowest should be 19")
+expect(defined("average") and near(average, 24.0), "average should be 24.0")` }
+  ]
+},
+{
+  id: "m6", title: "Decisions",
+  blurb: "Make your program choose what to do.",
+  learn: [
+    { t: "<p>Programs often need to make choices. <code class='i'>if</code> checks a condition. If it’s true, Python runs the lines underneath. If it’s false, Python skips them.</p>",
+      code: `age = 20
+if age >= 18:
+    print("You can vote")
+print("Done")`, out: `You can vote
+Done` },
+    { t: "<p>Two details matter a lot:</p><p>1. The <code class='i'>if</code> line ends with a <b>colon</b> <code class='i'>:</code></p><p>2. The lines that belong to the <code class='i'>if</code> are <b>indented</b> (pushed right by 4 spaces; press Tab). That’s how Python knows which lines are inside. In the example above, “Done” isn’t indented, so it always runs.</p>" },
+    { t: "<p>To compare things, use these. Each comparison gives back <code class='i'>True</code> or <code class='i'>False</code>.</p><p><code class='i'>==</code> equal, <code class='i'>!=</code> not equal, <code class='i'>&lt;</code> less than, <code class='i'>&gt;</code> greater than, <code class='i'>&lt;=</code> less or equal, <code class='i'>&gt;=</code> greater or equal.</p><p class='tip'>Common mistake: one <code class='i'>=</code> stores a value. Two <code class='i'>==</code> compare.</p>",
+      code: `print(5 > 3)
+print(5 == 3)
+print("cat" == "cat")`, out: `True
+False
+True` },
+    { t: "<p><code class='i'>else</code> runs when the condition is false. <code class='i'>elif</code> (short for “else if”) checks another condition.</p><p>Python checks from top to bottom and runs <b>only the first</b> block that’s true, then skips the rest.</p>",
+      code: `temp = 15
+if temp > 25:
+    print("Hot")
+elif temp > 10:
+    print("Mild")
+else:
+    print("Cold")`, out: `Mild` },
+    { t: "<p>Combine conditions with <code class='i'>and</code> (both must be true) and <code class='i'>or</code> (at least one must be true).</p>",
+      code: `age = 25
+has_id = True
+if age >= 18 and has_id:
+    print("Entry allowed")`, out: `Entry allowed` }
+  ],
+  playground: `money = 12
+price = 15
+if money >= price:
+    print("You can buy it")
+else:
+    print("You need", price - money, "more")`,
+  exercises: [
+    { id: "6a", title: "Hot or not",
+      task: "<p>If <code class='i'>temperature</code> is above 30, print <code class='i'>Hot day</code>. Otherwise, print <code class='i'>Nice day</code>.</p><p>Try changing the temperature to test both answers before you check.</p>",
+      starter: `temperature = 32
+`,
+      hint: "if temperature > 30:  then an indented print, then else:  and another indented print",
+      solution: `temperature = 32
+if temperature > 30:
+    print("Hot day")
+else:
+    print("Nice day")`,
+      check: `expect("if" in __code__ and "else" in __code__, "Use if and else")
+expect(__output__.strip() == "Hot day", "With temperature = 32, it should print: Hot day")` },
+    { id: "6b", title: "Grade calculator",
+      task: "<p>Print the grade for <code class='i'>score</code>:</p><p>80 or more: <code class='i'>A</code>. 70 or more: <code class='i'>B</code>. 50 or more: <code class='i'>C</code>. Below 50: <code class='i'>Fail</code>.</p>",
+      starter: `score = 72
+`,
+      hint: "Start with the highest grade: if score >= 80, then elif score >= 70, then elif score >= 50, then else.",
+      solution: `score = 72
+if score >= 80:
+    print("A")
+elif score >= 70:
+    print("B")
+elif score >= 50:
+    print("C")
+else:
+    print("Fail")`,
+      check: `expect("elif" in __code__, "Use elif for the extra conditions")
+expect(__output__.strip() == "B", "With score = 72, it should print: B")` },
+    { id: "6c", title: "At the door",
+      task: "<p>Someone can enter only if they are 18 or older <b>and</b> have a ticket. Print <code class='i'>Welcome</code> or <code class='i'>Sorry</code>.</p>",
+      starter: `age = 25
+has_ticket = True
+`,
+      hint: "if age >= 18 and has_ticket:",
+      solution: `age = 25
+has_ticket = True
+if age >= 18 and has_ticket:
+    print("Welcome")
+else:
+    print("Sorry")`,
+      check: `expect(" and " in __code__, "Combine both conditions with and")
+expect(__output__.strip() == "Welcome", "It should print: Welcome")` }
+  ]
+},
+{
+  id: "m7", title: "Loops",
+  blurb: "Repeat work without copy-pasting.",
+  learn: [
+    { t: "<p>A <b>loop</b> repeats code. A <code class='i'>for</code> loop goes through a list one item at a time.</p><p>Read <code class='i'>for fruit in fruits:</code> as “for each fruit in the list, do the indented lines.” Each time round, the variable <code class='i'>fruit</code> holds the next item.</p>",
+      code: `fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print("I like", fruit)`, out: `I like apple
+I like banana
+I like cherry` },
+    { t: "<p>Step by step, Python does this: <code class='i'>fruit</code> becomes “apple”, runs the print. Then <code class='i'>fruit</code> becomes “banana”, runs the print again. Then “cherry”. Then the list is finished, so the loop stops.</p>" },
+    { t: "<p>To repeat something a number of times, use <code class='i'>range()</code>. <code class='i'>range(3)</code> gives 0, 1, 2 (three numbers, starting at 0). <code class='i'>range(1, 4)</code> gives 1, 2, 3 (it stops <b>before</b> the second number).</p>",
+      code: `for i in range(3):
+    print("Hello", i)`, out: `Hello 0
+Hello 1
+Hello 2` },
+    { t: "<p>A very common pattern: <b>build up a result</b>. Make a variable <i>before</i> the loop, update it <i>inside</i> the loop, and print it <i>after</i> the loop (not indented).</p>",
+      code: `numbers = [4, 7, 1]
+total = 0
+for n in numbers:
+    total = total + n
+print(total)`, out: `12` },
+    { t: "<p>You can put an <code class='i'>if</code> inside a loop to only act on some items. Notice the double indentation.</p>",
+      code: `for n in [3, 8, 1, 10]:
+    if n > 5:
+        print(n, "is big")`, out: `8 is big
+10 is big` },
+    { t: "<p>A <code class='i'>while</code> loop repeats <b>as long as</b> its condition is true. Something inside must change so the condition eventually becomes false.</p><p class='tip'>If it never becomes false, the loop runs forever and this page freezes. Just reload the page if that happens.</p>",
+      code: `count = 3
+while count > 0:
+    print(count)
+    count = count - 1
+print("Go!")`, out: `3
+2
+1
+Go!` }
+  ],
+  playground: `for i in range(1, 4):
+    print(i, "x 5 =", i * 5)`,
+  exercises: [
+    { id: "7a", title: "Count to five",
+      task: "<p>Use a <code class='i'>for</code> loop with <code class='i'>range</code> to print the numbers 1 to 5, one per line.</p>",
+      starter: ``,
+      hint: "for i in range(1, 6):  then print(i) indented underneath. range stops before 6.",
+      solution: `for i in range(1, 6):
+    print(i)`,
+      check: `expect("for" in __code__ and "range" in __code__, "Use a for loop with range")
+expect(lines() == ["1", "2", "3", "4", "5"], "Expected 5 lines: 1, 2, 3, 4, 5")` },
+    { id: "7b", title: "Add up a receipt",
+      task: "<p>Add up all the prices using a loop. Store the result in <code class='i'>total</code> and print it.</p><p>Don’t use <code class='i'>sum()</code> this time. The point is to practise the loop.</p>",
+      starter: `prices = [4.5, 3.0, 12.25, 6.0]
+total = 0
+`,
+      hint: "for p in prices:  then inside, total = total + p. Print total after the loop, not indented.",
+      solution: `prices = [4.5, 3.0, 12.25, 6.0]
+total = 0
+for p in prices:
+    total = total + p
+print(total)`,
+      check: `expect("for" in __code__, "Use a for loop")
+expect("sum(" not in __code__, "Try it without sum(), using the loop")
+expect(defined("total") and near(total, 25.75), "total should be 25.75")` },
+    { id: "7c", title: "Count long words",
+      task: "<p>Count how many words have <b>more than 4</b> letters. Store the number in <code class='i'>count</code> and print it.</p>",
+      starter: `words = ["cat", "elephant", "dog", "giraffe", "bee", "zebra"]
+count = 0
+`,
+      hint: "Loop over words. Inside: if len(word) > 4:  then count = count + 1",
+      solution: `words = ["cat", "elephant", "dog", "giraffe", "bee", "zebra"]
+count = 0
+for word in words:
+    if len(word) > 4:
+        count = count + 1
+print(count)`,
+      check: `expect(defined("count") and count == 3, "count should be 3 (elephant, giraffe, zebra)")` },
+    { id: "7d", title: "Saving up",
+      task: "<p>You save 50 every week, starting from 0. Use a <code class='i'>while</code> loop to keep saving until you have at least 300. Count the weeks in <code class='i'>weeks</code> and print it.</p>",
+      starter: `savings = 0
+weeks = 0
+`,
+      hint: "while savings < 300:  then inside, add 50 to savings and 1 to weeks",
+      solution: `savings = 0
+weeks = 0
+while savings < 300:
+    savings = savings + 50
+    weeks = weeks + 1
+print(weeks)`,
+      check: `expect("while" in __code__, "Use a while loop")
+expect(defined("weeks") and weeks == 6, "weeks should be 6")` }
+  ]
+},
+{
+  id: "m8", title: "Functions",
+  blurb: "Package code into reusable blocks.",
+  learn: [
+    { t: "<p>A <b>function</b> is a named block of code you can use again and again. You’ve already used some: <code class='i'>print()</code>, <code class='i'>len()</code> and <code class='i'>round()</code> are all functions.</p><p>You make your own with <code class='i'>def</code> (short for “define”), then a name, brackets, and a colon. The code inside is indented.</p>",
+      code: `def say_hi():
+    print("Hi!")
+    print("Nice to meet you")
+
+say_hi()
+say_hi()`, out: `Hi!
+Nice to meet you
+Hi!
+Nice to meet you` },
+    { t: "<p><b>Defining</b> a function doesn’t run it. It just saves the recipe. The code only runs when you <b>call</b> it by writing its name with brackets, like <code class='i'>say_hi()</code>.</p>" },
+    { t: "<p>Functions can take <b>inputs</b>, called parameters. Put names inside the brackets. When you call the function, the value you pass in gets stored in that name.</p>",
+      code: `def greet(name):
+    print(f"Hello, {name}!")
+
+greet("Sam")
+greet("Mia")`, out: `Hello, Sam!
+Hello, Mia!` },
+    { t: "<p><code class='i'>return</code> sends a result <b>back</b> to where the function was called, so you can store it or use it in more calculations.</p>",
+      code: `def double(x):
+    return x * 2
+
+result = double(4)
+print(result)
+print(double(10) + 1)`, out: `8
+21` },
+    { t: "<p class='tip'><b>print vs return:</b> <code class='i'>print</code> only shows a value on screen. <code class='i'>return</code> hands the value back so other code can use it. A function without <code class='i'>return</code> gives back <code class='i'>None</code>, which means “nothing.”</p>",
+      code: `def show(x):
+    print(x * 2)
+
+answer = show(4)
+print(answer)`, out: `8
+None` }
+  ],
+  playground: `def area(width, height):
+    return width * height
+
+print(area(3, 4))
+print(area(10, 2))`,
+  exercises: [
+    { id: "8a", title: "Square a number",
+      task: "<p>Write a function <code class='i'>square(n)</code> that <b>returns</b> n multiplied by itself.</p>",
+      starter: `def square(n):
+    # replace this line with your code
+
+
+print(square(4))`,
+      hint: "Inside the function: return n * n",
+      solution: `def square(n):
+    return n * n
+
+print(square(4))`,
+      check: `expect(defined("square"), "Define a function called square")
+expect(square(4) is not None, "Your function gives back nothing. Use return, not print")
+expect(square(4) == 16 and square(-3) == 9 and square(0) == 0, "square(4) should be 16 and square(-3) should be 9")` },
+    { id: "8b", title: "Even or odd",
+      task: "<p>Write <code class='i'>is_even(n)</code> that returns <code class='i'>True</code> if n is even, and <code class='i'>False</code> if it’s odd.</p><p>Hint from the maths lesson: a number is even when the remainder after dividing by 2 is 0.</p>",
+      starter: `def is_even(n):
+    # replace this line with your code
+
+
+print(is_even(4))
+print(is_even(7))`,
+      hint: "n % 2 gives the remainder. You can return the comparison directly: return n % 2 == 0",
+      solution: `def is_even(n):
+    return n % 2 == 0
+
+print(is_even(4))
+print(is_even(7))`,
+      check: `expect(defined("is_even"), "Define a function called is_even")
+expect(is_even(4) is not None, "Your function gives back nothing. Use return")
+expect(is_even(4) == True and is_even(7) == False and is_even(0) == True, "is_even(4) should be True and is_even(7) should be False")` },
+    { id: "8c", title: "Temperature converter",
+      task: "<p>Write <code class='i'>to_fahrenheit(c)</code> that returns the temperature in Fahrenheit.</p><p>Formula: F = C × 9 ÷ 5 + 32</p>",
+      starter: `def to_fahrenheit(c):
+    # replace this line with your code
+
+
+print(to_fahrenheit(100))`,
+      hint: "return c * 9 / 5 + 32",
+      solution: `def to_fahrenheit(c):
+    return c * 9 / 5 + 32
+
+print(to_fahrenheit(100))`,
+      check: `expect(defined("to_fahrenheit"), "Define a function called to_fahrenheit")
+expect(to_fahrenheit(0) is not None, "Your function gives back nothing. Use return")
+expect(near(to_fahrenheit(0), 32) and near(to_fahrenheit(100), 212) and near(to_fahrenheit(-40), -40), "to_fahrenheit(100) should be 212")` }
+  ]
+},
+{
+  id: "m9", title: "Dictionaries",
+  blurb: "Look things up by name.",
+  learn: [
+    { t: "<p>A <b>dictionary</b> stores pairs: a <b>key</b> and its <b>value</b>. It’s like a real dictionary (word → meaning) or your phone contacts (name → number).</p><p>Write it with curly brackets <code class='i'>{ }</code>. Each pair is <code class='i'>key: value</code>, separated by commas.</p>",
+      code: `ages = {"Ana": 31, "Ben": 25}
+print(ages)`, out: `{'Ana': 31, 'Ben': 25}` },
+    { t: "<p>Look up a value by putting its key in square brackets. Unlike lists, you don’t use position numbers; you use the key.</p>",
+      code: `ages = {"Ana": 31, "Ben": 25}
+print(ages["Ana"])`, out: `31` },
+    { t: "<p>To add a new pair or change an existing one, assign to the key. If the key exists, its value is replaced. If not, a new pair is added.</p>",
+      code: `ages = {"Ana": 31, "Ben": 25}
+ages["Ben"] = 26
+ages["Cara"] = 40
+print(ages)`, out: `{'Ana': 31, 'Ben': 26, 'Cara': 40}` },
+    { t: "<p>Check if a key exists with <code class='i'>in</code>. Looking up a key that doesn’t exist causes a <code class='i'>KeyError</code>.</p>",
+      code: `ages = {"Ana": 31}
+print("Ana" in ages)
+print("Zoe" in ages)`, out: `True
+False` },
+    { t: "<p>Loop through all pairs with <code class='i'>.items()</code>. Each time round, you get both the key and the value.</p>",
+      code: `ages = {"Ana": 31, "Ben": 25}
+for name, age in ages.items():
+    print(name, "is", age)`, out: `Ana is 31
+Ben is 25` }
+  ],
+  playground: `capitals = {"France": "Paris", "Japan": "Tokyo"}
+capitals["Italy"] = "Rome"
+for country, city in capitals.items():
+    print(f"The capital of {country} is {city}")`,
+  exercises: [
+    { id: "9a", title: "Shopping bill",
+      task: "<p>Using the prices in the dictionary, calculate the cost of <b>3 apples and 1 bread</b>. Store it in <code class='i'>total</code> and print it.</p><p>Take the prices from the dictionary. Don’t type the numbers.</p>",
+      starter: `prices = {"apple": 0.5, "bread": 2.25, "milk": 1.2}
+`,
+      hint: "total = 3 * prices[\"apple\"] + prices[\"bread\"]",
+      solution: `prices = {"apple": 0.5, "bread": 2.25, "milk": 1.2}
+total = 3 * prices["apple"] + prices["bread"]
+print(total)`,
+      check: `expect("prices[" in __code__, "Get the prices from the dictionary with prices[...]")
+expect(defined("total") and near(total, 3.75), "total should be 3.75")` },
+    { id: "9b", title: "Update the price list",
+      task: "<p>Add <code class='i'>\"eggs\"</code> with a price of 3.0, and change the price of milk to 1.5. Print the dictionary.</p>",
+      starter: `prices = {"apple": 0.5, "bread": 2.25, "milk": 1.2}
+`,
+      hint: "prices[\"eggs\"] = 3.0 and prices[\"milk\"] = 1.5",
+      solution: `prices = {"apple": 0.5, "bread": 2.25, "milk": 1.2}
+prices["eggs"] = 3.0
+prices["milk"] = 1.5
+print(prices)`,
+      check: `expect(defined("prices") and "eggs" in prices and near(prices["eggs"], 3.0), "Add eggs with price 3.0")
+expect(near(prices.get("milk", 0), 1.5), "Change milk to 1.5")
+expect(len(prices) == 4, "prices should have 4 items")` },
+    { id: "9c", title: "Top scorer",
+      task: "<p>Find the name of the person with the <b>highest</b> score. Store the name in <code class='i'>best</code> and print it.</p><p>Use a loop, so it would still work if the scores changed.</p>",
+      starter: `scores = {"Ana": 88, "Ben": 95, "Cara": 79}
+`,
+      hint: "Before the loop: best = \"\" and best_score = 0. Loop with .items(). If a score is bigger than best_score, update both.",
+      solution: `scores = {"Ana": 88, "Ben": 95, "Cara": 79}
+best = ""
+best_score = 0
+for name, score in scores.items():
+    if score > best_score:
+        best = name
+        best_score = score
+print(best)`,
+      check: `expect("for" in __code__, "Use a loop")
+expect(defined("best") and best == "Ben", "best should be Ben")` }
+  ]
+},
+{
+  id: "m10", title: "Errors & debugging",
+  blurb: "Errors are clues, not failures.",
+  learn: [
+    { t: "<p>Everyone gets errors, even professional programmers, many times a day. An error is just Python telling you where it got stuck and why.</p><p>The most useful part is the <b>error name</b> at the start. It tells you what kind of problem it is.</p>" },
+    { t: "<p><code class='i'>SyntaxError</code>: Python can’t read your code. Usually a missing colon <code class='i'>:</code>, bracket, or quote. Python often tells you the line number.</p><p><code class='i'>IndentationError</code>: the spaces at the start of a line are wrong.</p>",
+      code: `if 5 > 3
+    print("yes")`, out: `SyntaxError: expected ':'` },
+    { t: "<p><code class='i'>NameError</code>: you used a name Python doesn’t know. Usually a typo, or a variable used before it was created.</p>",
+      code: `message = "Hi"
+print(mesage)`, out: `NameError: name 'mesage' is not defined` },
+    { t: "<p><code class='i'>TypeError</code>: you mixed types that don’t go together, like text + number.</p><p><code class='i'>ValueError</code>: right type, but a bad value, like <code class='i'>int(\"abc\")</code>.</p><p><code class='i'>IndexError</code>: a list position that doesn’t exist. <code class='i'>KeyError</code>: a dictionary key that doesn’t exist.</p>" },
+    { t: "<p><b>Debugging tip:</b> when something isn’t working, add <code class='i'>print()</code> lines to see what’s really inside your variables. The problem is usually that a value isn’t what you think it is.</p>" },
+    { t: "<p><code class='i'>try</code> / <code class='i'>except</code> lets your program handle an error instead of crashing. Python <b>tries</b> the indented code. If that specific error happens, it runs the <code class='i'>except</code> part instead.</p>",
+      code: `for text in ["10", "abc", "30"]:
+    try:
+        print(int(text) * 2)
+    except ValueError:
+        print("Skipped", text)`, out: `20
+Skipped abc
+60` }
+  ],
+  playground: `items = ["a", "b", "c"]
+print(items[5])`,
+  exercises: [
+    { id: "10a", title: "Fix the NameError",
+      task: "<p>Run it, read the error, and fix it so it prints <code class='i'>Hi</code>.</p>",
+      starter: `message = "Hi"
+print(mesage)`,
+      hint: "Look closely at the spelling of the variable name in each line.",
+      solution: `message = "Hi"
+print(message)`,
+      check: `expect(__output__.strip() == "Hi", "It should print Hi")` },
+    { id: "10b", title: "Fix the SyntaxError",
+      task: "<p>Run it, read the error, and fix it so it prints <code class='i'>yes</code>.</p>",
+      starter: `if 5 > 3
+    print("yes")`,
+      hint: "Every if line must end with something.",
+      solution: `if 5 > 3:
+    print("yes")`,
+      check: `expect(__output__.strip() == "yes", "It should print yes")` },
+    { id: "10c", title: "Skip bad data",
+      task: "<p>Convert every item to a whole number and add it to <code class='i'>numbers</code>. One item isn’t a number. Use <code class='i'>try</code>/<code class='i'>except</code> to skip it. Print <code class='i'>numbers</code>.</p><p>Expected: <code class='i'>[10, 20, 30]</code></p>",
+      starter: `items = ["10", "20", "abc", "30"]
+numbers = []
+`,
+      hint: "Loop over items. Inside: try:  numbers.append(int(item))  then except ValueError:  pass  (pass means “do nothing”)",
+      solution: `items = ["10", "20", "abc", "30"]
+numbers = []
+for item in items:
+    try:
+        numbers.append(int(item))
+    except ValueError:
+        pass
+print(numbers)`,
+      check: `expect("try" in __code__ and "except" in __code__, "Use try and except")
+expect(defined("numbers") and numbers == [10, 20, 30], "numbers should be [10, 20, 30]")` }
+  ]
+}
+];
+
+/* ---------- State ---------- */
+const STORE_KEY = "pyzero-progress-v1";
+let state = { done: {}, code: {}, mod: 0, ex: 0 };
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  if (saved && typeof saved === "object") state = Object.assign(state, saved);
+} catch (e) {}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+const ALL_EX = MODULES.flatMap(m => m.exercises.map(x => x.id));
+const TOTAL = ALL_EX.length;
+
+/* ---------- Python engine ---------- */
+let engine = "loading";
+const pending = {};
+let tokenSeq = 0;
+window.pyDone = function (token, ok, out, err, msg) {
+  const r = pending[token];
+  if (r) { delete pending[token]; r({ ok: !!ok, out: String(out || ""), err: String(err || ""), msg: String(msg || "") }); }
+};
+function setEngine(kind) {
+  engine = kind;
+  const dot = document.getElementById("engine-dot");
+  const txt = document.getElementById("engine-text");
+  dot.className = "dot" + (kind === "ready" ? " ok" : kind === "none" ? " bad" : "");
+  txt.textContent = kind === "ready" ? "Python is ready" : kind === "none" ? "Python couldn’t start. Reload the page." : "Starting Python…";
+}
+function startEngineWatch() {
+  let tries = 0;
+  const timer = setInterval(() => {
+    tries++;
+    if (typeof window.pyRun === "function") { clearInterval(timer); setEngine("ready"); return; }
+    if (tries === 6 && typeof window.brython === "function") { try { window.brython({ debug: 1 }); } catch (e) {} }
+    if (tries > 40) { clearInterval(timer); setEngine("none"); }
+  }, 500);
+}
+function runPython(code, check) {
+  if (engine !== "ready") return Promise.resolve({ ok: false, out: "", err: "", msg: "Python is still starting. Wait a few seconds and try again." });
+  return new Promise(resolve => {
+    const token = "t" + (++tokenSeq);
+    pending[token] = resolve;
+    setTimeout(() => {
+      try { window.pyRun(code, check ? PRELUDE + "\n" + check : "", token); }
+      catch (e) { delete pending[token]; resolve({ ok: false, out: "", err: "Something went wrong running your code: " + e.message, msg: "" }); }
+    }, 20);
+  });
+}
+
+const FRIENDLY = {
+  NameError: "Python doesn’t know this name. Check the spelling, or create the variable before using it.",
+  TypeError: "You mixed types that don’t go together, like text + number. Convert with int(), float() or str().",
+  IndexError: "That list position doesn’t exist. Positions start at 0, and the last one is -1.",
+  ValueError: "The type is right but the value isn’t, like int(\"abc\").",
+  ZeroDivisionError: "You divided by zero, which isn’t possible.",
+  SyntaxError: "Python can’t read this line. Look for a missing colon, bracket, or quote.",
+  IndentationError: "The spaces at the start of a line are wrong. Lines inside if, for, while and def need 4 spaces.",
+  KeyError: "That key isn’t in the dictionary. Check the spelling and capital letters.",
+  AttributeError: "This value doesn’t have that tool. Check the spelling after the dot.",
+  ModuleNotFoundError: "That library isn’t available here. This course uses plain Python only."
+};
+
+/* ---------- Progress ---------- */
+function doneCount() { return ALL_EX.filter(id => state.done[id]).length; }
+function renderProgress() {
+  const k = doneCount();
+  const pct = Math.round(k / TOTAL * 100);
+  document.getElementById("pct").textContent = pct + "%";
+  document.getElementById("bar-fill").style.width = pct + "%";
+  document.getElementById("pct-note").textContent = k === TOTAL ? `All ${TOTAL} exercises solved` : `${k} of ${TOTAL} exercises solved`;
+}
+
+/* ---------- Sidebar ---------- */
+function renderSidebar() {
+  const ul = document.getElementById("modlist");
+  ul.innerHTML = "";
+  MODULES.forEach((m, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.className = "mod-btn";
+    b.setAttribute("aria-current", i === state.mod ? "true" : "false");
+    const n = document.createElement("span"); n.className = "mod-n"; n.textContent = String(i + 1);
+    const t = document.createElement("span"); t.textContent = m.title;
+    const c = document.createElement("span"); c.className = "mod-count";
+    const k = m.exercises.filter(x => state.done[x.id]).length;
+    c.textContent = `${k}/${m.exercises.length}`;
+    if (k === m.exercises.length) c.classList.add("full");
+    b.append(n, t, c);
+    b.addEventListener("click", () => { state.mod = i; state.ex = 0; save(); render(); window.scrollTo(0, 0); });
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+
+/* ---------- Editor ---------- */
+function makeEditor(value, onChange, onSubmit) {
+  const ta = document.createElement("textarea");
+  ta.className = "code"; ta.spellcheck = false; ta.autocapitalize = "off"; ta.autocomplete = "off";
+  ta.setAttribute("autocorrect", "off");
+  ta.setAttribute("aria-label", "Code editor");
+  ta.value = value;
+  const fit = () => { ta.style.height = "auto"; ta.style.height = Math.max(140, ta.scrollHeight + 4) + "px"; };
+  ta.addEventListener("input", () => { onChange && onChange(ta.value); fit(); });
+  ta.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); onSubmit && onSubmit(); return; }
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault();
+      const s = ta.selectionStart, en = ta.selectionEnd;
+      ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(en);
+      ta.selectionStart = ta.selectionEnd = s + 4;
+      onChange && onChange(ta.value); fit();
+    } else if (e.key === "Enter") {
+      const s = ta.selectionStart;
+      const lineStart = ta.value.lastIndexOf("\n", s - 1) + 1;
+      const line = ta.value.slice(lineStart, s);
+      let indent = (line.match(/^ */) || [""])[0];
+      if (/:\s*$/.test(line)) indent += "    ";
+      if (indent) {
+        e.preventDefault();
+        ta.value = ta.value.slice(0, s) + "\n" + indent + ta.value.slice(ta.selectionEnd);
+        ta.selectionStart = ta.selectionEnd = s + 1 + indent.length;
+        onChange && onChange(ta.value); fit();
+      }
+    }
+  });
+  requestAnimationFrame(fit);
+  return ta;
+}
+
+function makeConsole() {
+  const con = document.createElement("div");
+  con.className = "console";
+  con.innerHTML = `<div class="console-head">Output</div><pre aria-live="polite">Press Run to see what your code prints.</pre><div class="verdict" hidden></div>`;
+  return con;
+}
+
+function showResult(con, res, isCheck) {
+  con.className = "console";
+  const head = con.querySelector(".console-head");
+  const pre = con.querySelector("pre");
+  const verdict = con.querySelector(".verdict");
+  pre.textContent = "";
+  if (res.out) pre.append(document.createTextNode(res.out));
+  if (res.err) {
+    const s = document.createElement("span"); s.className = "err-line";
+    s.textContent = (res.out && !res.out.endsWith("\n") ? "\n" : "") + res.err;
+    pre.append(s);
+  }
+  if (!res.out && !res.err && !isCheck && !res.msg) pre.textContent = "(your code ran, but nothing was printed)";
+  verdict.hidden = true; verdict.className = "verdict";
+  if (res.err) {
+    const name = (res.err.match(/^(\w+)/) || [])[1];
+    head.textContent = "Error";
+    con.classList.add("fail");
+    verdict.hidden = false; verdict.classList.add("fail");
+    verdict.textContent = FRIENDLY[name] || "Read the error name above. It tells you what kind of problem it is.";
+  } else if (isCheck) {
+    head.textContent = res.ok ? "Correct" : "Not yet";
+    con.classList.add(res.ok ? "pass" : "fail");
+    verdict.hidden = false; verdict.classList.add(res.ok ? "pass" : "fail");
+    verdict.textContent = res.ok ? "Well done. Exercise solved." : (res.msg || "Not quite. Compare your output with the task.");
+  } else {
+    head.textContent = "Output";
+    if (res.msg) { verdict.hidden = false; verdict.textContent = res.msg; }
+  }
+}
+
+/* ---------- Main render ---------- */
+function render() {
+  renderSidebar(); renderProgress();
+  const m = MODULES[state.mod];
+  const main = document.getElementById("main");
+  main.innerHTML = "";
+
+  const head = document.createElement("div"); head.className = "lesson-head";
+  const h1 = document.createElement("h1"); h1.textContent = `${state.mod + 1}. ${m.title}`;
+  const p = document.createElement("p"); p.textContent = m.blurb;
+  head.append(h1, p); main.appendChild(head);
+
+  // Learn section
+  const det = document.createElement("details"); det.className = "learn";
+  det.open = !m.exercises.some(x => state.done[x.id]);
+  const sum = document.createElement("summary"); sum.textContent = "Learn this first";
+  const body = document.createElement("div"); body.className = "learn-body";
+  m.learn.forEach((b, i) => {
+    const blk = document.createElement("div"); blk.className = "block";
+    const step = document.createElement("div"); step.className = "block-step"; step.textContent = `Step ${i + 1} of ${m.learn.length}`;
+    const txt = document.createElement("div"); txt.innerHTML = b.t;
+    blk.append(step, txt);
+    if (b.code) {
+      const s = document.createElement("div"); s.className = "sample" + (b.out ? "" : " solo");
+      const c = document.createElement("pre"); c.className = "s-code";
+      c.innerHTML = "<span class='s-tag'>Code</span>"; c.append(document.createTextNode(b.code));
+      s.appendChild(c);
+      if (b.out) {
+        const o = document.createElement("pre"); o.className = "s-out";
+        o.innerHTML = "<span class='s-tag'>What it shows</span>"; o.append(document.createTextNode(b.out));
+        s.appendChild(o);
+      }
+      blk.appendChild(s);
+    }
+    body.appendChild(blk);
+  });
+  // Playground
+  const tryHead = document.createElement("p"); tryHead.className = "try-head"; tryHead.textContent = "Try it yourself: run this, change something, run it again.";
+  let pgCode = m.playground;
+  const pgWrap = document.createElement("div"); pgWrap.className = "editor-wrap";
+  const pgBar = document.createElement("div"); pgBar.className = "editor-bar"; pgBar.innerHTML = "<span>Playground</span><span>Nothing here is graded</span>";
+  const pgCon = makeConsole();
+  const runPg = async () => { pgCon.querySelector("pre").textContent = "Running…"; showResult(pgCon, await runPython(pgCode, ""), false); };
+  const pgTa = makeEditor(pgCode, v => pgCode = v, runPg);
+  pgWrap.append(pgBar, pgTa);
+  const pgActions = document.createElement("div"); pgActions.className = "actions";
+  const pgRun = document.createElement("button"); pgRun.className = "btn"; pgRun.textContent = "Run";
+  pgRun.addEventListener("click", runPg);
+  pgActions.appendChild(pgRun);
+  body.append(tryHead, pgWrap, pgActions, pgCon);
+  det.append(sum, body); main.appendChild(det);
+
+  // Exercise
+  if (state.ex >= m.exercises.length) state.ex = 0;
+  const ex = m.exercises[state.ex];
+
+  const nav = document.createElement("div"); nav.className = "ex-nav";
+  const steps = document.createElement("div"); steps.className = "steps";
+  m.exercises.forEach((x, i) => {
+    const b = document.createElement("button"); b.className = "step" + (state.done[x.id] ? " done" : "");
+    b.textContent = state.done[x.id] ? "✓" : String(i + 1);
+    b.setAttribute("aria-label", `Exercise ${i + 1}${state.done[x.id] ? ", solved" : ""}`);
+    b.setAttribute("aria-current", i === state.ex ? "true" : "false");
+    b.addEventListener("click", () => { state.ex = i; save(); render(); });
+    steps.appendChild(b);
+  });
+  const t = document.createElement("h2"); t.className = "ex-title"; t.textContent = `Exercise: ${ex.title}`;
+  nav.append(steps, t); main.appendChild(nav);
+
+  const task = document.createElement("div"); task.className = "task"; task.innerHTML = ex.task;
+  main.appendChild(task);
+
+  let code = state.code[ex.id] != null ? state.code[ex.id] : ex.starter;
+  const wrap = document.createElement("div"); wrap.className = "editor-wrap";
+  const bar = document.createElement("div"); bar.className = "editor-bar";
+  bar.innerHTML = "<span>Your code</span><span>Ctrl/⌘ + Enter to check</span>";
+  const con = makeConsole();
+  const helper = document.createElement("div"); helper.className = "helper"; helper.hidden = true;
+
+  const actions = document.createElement("div"); actions.className = "actions";
+  const runBtn = document.createElement("button"); runBtn.className = "btn"; runBtn.textContent = "Run";
+  const checkBtn = document.createElement("button"); checkBtn.className = "btn primary"; checkBtn.textContent = "Check answer";
+  const hintBtn = document.createElement("button"); hintBtn.className = "btn"; hintBtn.textContent = "Hint";
+  const solBtn = document.createElement("button"); solBtn.className = "btn"; solBtn.textContent = "Solution";
+  const resetBtn = document.createElement("button"); resetBtn.className = "btn ghost"; resetBtn.textContent = "Reset code";
+
+  const nextRow = document.createElement("div"); nextRow.className = "next-row";
+  const prevBtn = document.createElement("button"); prevBtn.className = "btn"; prevBtn.textContent = "Previous";
+  const nextBtn = document.createElement("button");
+  const isLastEx = state.ex === m.exercises.length - 1;
+  const isLastMod = state.mod === MODULES.length - 1;
+  nextBtn.className = "btn" + (state.done[ex.id] ? " primary" : "");
+  nextBtn.textContent = isLastEx ? (isLastMod ? "Back to start" : "Next lesson") : "Next exercise";
+  prevBtn.disabled = state.mod === 0 && state.ex === 0;
+
+  const doRun = async () => {
+    con.querySelector("pre").textContent = "Running…";
+    showResult(con, await runPython(code, ""), false);
+  };
+  const doCheck = async () => {
+    checkBtn.disabled = true;
+    con.querySelector("pre").textContent = "Checking…";
+    const res = await runPython(code, ex.check);
+    checkBtn.disabled = false;
+    showResult(con, res, true);
+    if (res.ok) {
+      nextBtn.classList.add("primary");
+      if (!state.done[ex.id]) {
+        state.done[ex.id] = true; save(); renderSidebar(); renderProgress();
+        const b = steps.children[state.ex]; b.classList.add("done"); b.textContent = "✓";
+        if (doneCount() === TOTAL) showFinish();
+      }
+    }
+  };
+  const ta = makeEditor(code, v => { code = v; state.code[ex.id] = v; save(); }, doCheck);
+  wrap.append(bar, ta); main.appendChild(wrap);
+
+  runBtn.addEventListener("click", doRun);
+  checkBtn.addEventListener("click", doCheck);
+  hintBtn.addEventListener("click", () => {
+    helper.hidden = false; helper.innerHTML = "<h3>Hint</h3>";
+    const p = document.createElement("p"); p.textContent = ex.hint; helper.appendChild(p);
+  });
+  solBtn.addEventListener("click", () => {
+    helper.hidden = false;
+    helper.innerHTML = "<h3>Solution</h3><p>Read it, understand each line, then type it yourself instead of copying. That’s how it sticks.</p>";
+    const pre = document.createElement("pre"); pre.textContent = ex.solution; helper.appendChild(pre);
+  });
+  resetBtn.addEventListener("click", () => {
+    code = ex.starter; ta.value = code; delete state.code[ex.id]; save(); ta.dispatchEvent(new Event("input"));
+  });
+  actions.append(runBtn, checkBtn, hintBtn, solBtn, resetBtn);
+  main.append(actions, con, helper);
+
+  prevBtn.addEventListener("click", () => {
+    if (state.ex > 0) state.ex--; else { state.mod--; state.ex = MODULES[state.mod].exercises.length - 1; }
+    save(); render(); window.scrollTo(0, 0);
+  });
+  nextBtn.addEventListener("click", () => {
+    if (!isLastEx) state.ex++;
+    else if (isLastMod) { state.mod = 0; state.ex = 0; }
+    else { state.mod++; state.ex = 0; }
+    save(); render(); window.scrollTo(0, 0);
+  });
+  nextRow.append(prevBtn, nextBtn);
+  main.appendChild(nextRow);
+
+  function showFinish() {
+    const f = document.createElement("div"); f.className = "finish";
+    f.innerHTML = "<h2>You finished every exercise</h2><p>You now know the core of Python: variables, maths, text, lists, decisions, loops, functions, dictionaries and debugging. That’s the foundation everything else is built on.</p>";
+    main.appendChild(f);
+  }
+  if (doneCount() === TOTAL) showFinish();
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Erase all progress and saved code?")) return;
+  state = { done: {}, code: {}, mod: 0, ex: 0 }; save(); render();
+});
+
+if (state.mod >= MODULES.length) state.mod = 0;
+render();
+setEngine("loading");
+window.addEventListener("load", startEngineWatch);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/brython@3.13.1/brython.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/brython@3.13.1/brython_stdlib.js"></script>
+</body>
+</html>
