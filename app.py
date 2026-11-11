@@ -11,7 +11,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Load the app (HTML + CSS + JavaScript, with Python running in the browser via Brython)
+# Load the app (HTML + CSS + JavaScript, with Python running in the browser via Pyodide)
 html = (Path(__file__).parent / "index.html").read_text(encoding="utf-8")
 
 components.html(html, height=1100, scrolling=True)
